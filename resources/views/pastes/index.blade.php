@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="text-center mb-10">
-    <h1 class="text-3xl font-bold mb-2">Simple Pastebin</h1>
+    <h1 class="text-3xl font-bold mb-2">Snippy</h1>
     <p class="text-gray-400">Share code snippets and text quickly</p>
 </div>
 

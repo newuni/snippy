@@ -6,7 +6,7 @@ services:
     ports:
       - "8081:80"
     environment:
-      APP_NAME: Pastebin
+      APP_NAME: Snippy
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: "${APP_KEY}"

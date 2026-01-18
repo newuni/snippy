@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Pastebin' }}</title>
+    <title>{{ $title ?? 'Snippy' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -12,7 +12,7 @@
     <nav class="bg-gray-800 border-b border-gray-700">
         <div class="max-w-5xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
-                <a href="{{ route('pastes.index') }}" class="text-xl font-bold text-indigo-400">📋 Pastebin</a>
+                <a href="{{ route('pastes.index') }}" class="text-xl font-bold text-indigo-400">✂️ Snippy</a>
                 <a href="{{ route('pastes.create') }}" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition">
                     + New Paste
                 </a>
@@ -31,7 +31,7 @@
     </main>
 
     <footer class="text-center py-6 text-gray-500 text-sm">
-        Simple Pastebin Clone · Built with Laravel
+        Share code snippets · Built with Laravel
     </footer>
 
     <script>hljs.highlightAll();</script>
