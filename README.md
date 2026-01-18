@@ -1,6 +1,6 @@
 # ✂️ Snippy
 
-A simple, self-hosted code snippet sharing app built with Laravel and PostgreSQL.
+A simple, self-hosted code snippet sharing app. Share code with syntax highlighting, optional password protection, and auto-expiration.
 
 ## Features
 
