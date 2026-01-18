@@ -1,49 +1,49 @@
 services:
   app:
     build: .
-    container_name: pastebin-app
+    container_name: snippy-app
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "${APP_PORT:-8081}:80"
     environment:
       APP_NAME: Snippy
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: "${APP_KEY}"
-      APP_URL: http://localhost:8081
+      APP_URL: "${APP_URL:-http://localhost:8081}"
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
-      DB_DATABASE: pastebin
-      DB_USERNAME: pastebin
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: "${DB_DATABASE:-snippy}"
+      DB_USERNAME: "${DB_USERNAME:-snippy}"
+      DB_PASSWORD: "${DB_PASSWORD}"
     depends_on:
       db:
         condition: service_healthy
     networks:
-      - pastebin-net
+      - snippy-net
 
   db:
     image: postgres:16-alpine
-    container_name: pastebin-db
+    container_name: snippy-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: pastebin
-      POSTGRES_USER: pastebin
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: "${DB_DATABASE:-snippy}"
+      POSTGRES_USER: "${DB_USERNAME:-snippy}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
     volumes:
-      - pastebin-pgdata:/var/lib/postgresql/data
+      - snippy-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pastebin"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-snippy}"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - pastebin-net
+      - snippy-net
 
 volumes:
-  pastebin-pgdata:
+  snippy-pgdata:
 
 networks:
-  pastebin-net:
+  snippy-net:
     driver: bridge
