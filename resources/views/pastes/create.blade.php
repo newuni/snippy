@@ -27,7 +27,7 @@
             @enderror
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-3 gap-4 mb-6">
             <div>
                 <label for="syntax" class="block text-sm font-medium text-gray-400 mb-2">Syntax</label>
                 <select name="syntax" id="syntax"
@@ -57,6 +57,13 @@
                     <option value="1w">1 Week</option>
                     <option value="1M">1 Month</option>
                 </select>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-400 mb-2">Password (optional)</label>
+                <input type="password" name="password" id="password"
+                       class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+                       placeholder="🔒 Private">
             </div>
         </div>
 

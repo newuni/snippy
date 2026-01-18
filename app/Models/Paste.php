@@ -7,7 +7,9 @@ use Illuminate\Support\Str;
 
 class Paste extends Model
 {
-    protected $fillable = ['title', 'content', 'syntax', 'expires_at'];
+    protected $fillable = ['title', 'content', 'syntax', 'password', 'expires_at'];
+    
+    protected $hidden = ['password'];
     
     protected $casts = [
         'expires_at' => 'datetime',
@@ -34,6 +36,16 @@ class Paste extends Model
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
+    }
+
+    public function isProtected(): bool
+    {
+        return !empty($this->password);
+    }
+
+    public function checkPassword(string $password): bool
+    {
+        return $this->password && password_verify($password, $this->password);
     }
 
     public function getRouteKeyName(): string

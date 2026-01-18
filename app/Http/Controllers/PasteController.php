@@ -30,6 +30,7 @@ class PasteController extends Controller
             'content' => 'required|string|max:500000',
             'syntax' => 'required|string|in:plaintext,php,javascript,python,sql,json,html,css,bash,yaml,markdown',
             'expiration' => 'nullable|string|in:10m,1h,1d,1w,1M,never',
+            'password' => 'nullable|string|min:4|max:100',
         ]);
 
         $expiresAt = match($validated['expiration'] ?? 'never') {
@@ -45,6 +46,7 @@ class PasteController extends Controller
             'title' => $validated['title'],
             'content' => $validated['content'],
             'syntax' => $validated['syntax'],
+            'password' => !empty($validated['password']) ? password_hash($validated['password'], PASSWORD_DEFAULT) : null,
             'expires_at' => $expiresAt,
         ]);
 
@@ -52,19 +54,39 @@ class PasteController extends Controller
             ->with('success', 'Paste created successfully!');
     }
 
-    public function show(Paste $paste)
+    public function show(Request $request, Paste $paste)
     {
         if ($paste->isExpired()) {
             abort(404, 'This paste has expired.');
         }
 
+        if ($paste->isProtected() && !$request->session()->get("paste_unlocked_{$paste->id}")) {
+            return view('pastes.password', compact('paste'));
+        }
+
         return view('pastes.show', compact('paste'));
     }
 
-    public function raw(Paste $paste)
+    public function unlock(Request $request, Paste $paste)
+    {
+        $request->validate(['password' => 'required|string']);
+
+        if ($paste->checkPassword($request->password)) {
+            $request->session()->put("paste_unlocked_{$paste->id}", true);
+            return redirect()->route('pastes.show', $paste);
+        }
+
+        return back()->withErrors(['password' => 'Incorrect password']);
+    }
+
+    public function raw(Request $request, Paste $paste)
     {
         if ($paste->isExpired()) {
             abort(404, 'This paste has expired.');
+        }
+
+        if ($paste->isProtected() && !$request->session()->get("paste_unlocked_{$paste->id}")) {
+            abort(403, 'This paste is password protected.');
         }
 
         return response($paste->content)

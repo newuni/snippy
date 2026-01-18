@@ -15,7 +15,7 @@
             <div class="flex justify-between items-start">
                 <div>
                     <span class="font-medium text-indigo-400">
-                        {{ $paste->title ?: 'Untitled' }}
+                        @if($paste->isProtected())🔒 @endif{{ $paste->title ?: 'Untitled' }}
                     </span>
                     <span class="text-gray-500 text-sm ml-2">{{ $paste->slug }}</span>
                 </div>
