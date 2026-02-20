@@ -56,4 +56,18 @@ php artisan key:generate --show
 
 ## License
 
-MIT
+MIT (see [`LICENSE`](./LICENSE))
+
+
+## Third-Party Services & Trademarks
+
+This project uses third-party open-source components (Laravel, PostgreSQL, Docker, Highlight.js).
+All trademarks are property of their respective owners; no affiliation/endorsement is implied.
+
+
+## Responsible Use
+
+Use this software only for lawful purposes.
+Do not use it for unauthorized access, abuse, or illegal content distribution.
+
+See [`SECURITY.md`](./SECURITY.md).
