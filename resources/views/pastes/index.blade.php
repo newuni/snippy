@@ -1,38 +1,69 @@
 @extends('pastes.layout')
 
 @section('content')
-<div class="text-center mb-10">
-    <h1 class="text-3xl font-bold mb-2">Snippy</h1>
-    <p class="text-gray-400">Share code snippets and text quickly</p>
-</div>
+<section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+    <div class="panel hero-panel">
+        <p class="eyebrow">Markdown publishing, not throwaway pastes</p>
+        <h1 class="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
+            Draft privately, autosave continuously, and publish only when the page is ready.
+        </h1>
+        <p class="mt-5 max-w-2xl text-lg text-[var(--muted)]">
+            Snippy v1 keeps a private manage link for editing and a separate public URL for readers. Markdown preview, tags, raw output, expiration, and legacy public passwords still work.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+            <a href="{{ route('pastes.create') }}" class="btn btn-primary">Start a draft</a>
+            <a href="{{ route('pastes.explore') }}" class="btn btn-secondary">Browse published posts</a>
+        </div>
+    </div>
 
-<div class="bg-gray-800 rounded-xl p-6 mb-8">
-    <h2 class="text-lg font-semibold mb-4 text-gray-300">Recent Pastes</h2>
-    
-    @forelse($pastes as $paste)
-        <a href="{{ route('pastes.show', $paste) }}" 
-           class="block bg-gray-700/50 hover:bg-gray-700 rounded-lg p-4 mb-3 transition">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="font-medium text-indigo-400">
-                        @if($paste->isProtected())🔒 @endif{{ $paste->title ?: 'Untitled' }}
-                    </span>
-                    <span class="text-gray-500 text-sm ml-2">{{ $paste->slug }}</span>
+    <div class="panel">
+        <p class="eyebrow">How it works</p>
+        <ol class="mt-5 space-y-4 text-sm text-[var(--muted)]">
+            <li><span class="step-index">1</span> `GET /new` creates a private draft and redirects to its manage URL.</li>
+            <li><span class="step-index">2</span> Typing triggers debounced autosave and server-rendered markdown preview updates.</li>
+            <li><span class="step-index">3</span> `POST /manage/{token}/publish` snapshots the draft to the public slug URL.</li>
+        </ol>
+    </div>
+</section>
+
+<section class="mt-8 panel">
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <p class="eyebrow">Recent publications</p>
+            <h2 class="mt-2 text-2xl font-semibold">Fresh from Explore</h2>
+        </div>
+        <a href="{{ route('pastes.explore') }}" class="text-sm font-medium text-[var(--accent)]">See all</a>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        @forelse ($recent as $paste)
+            <article class="card">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <a href="{{ route('pastes.show', ['paste' => $paste->slug]) }}" class="text-lg font-semibold hover:text-[var(--accent)]">
+                            {{ $paste->published_title ?: 'Untitled' }}
+                        </a>
+                        <p class="mt-1 text-sm text-[var(--muted)]">
+                            Published {{ optional($paste->published_at)->diffForHumans() }}
+                            @if ($paste->isProtected())
+                                · Password protected
+                            @endif
+                        </p>
+                    </div>
+                    <span class="pill">Markdown</span>
                 </div>
-                <span class="text-xs px-2 py-1 bg-gray-600 rounded">{{ $paste->syntax }}</span>
-            </div>
-            <p class="text-gray-400 text-sm mt-2 truncate">
-                {{ Str::limit($paste->content, 100) }}
-            </p>
-            <span class="text-gray-500 text-xs mt-2 block">
-                {{ $paste->created_at->diffForHumans() }}
-                @if($paste->expires_at)
-                    · Expires {{ $paste->expires_at->diffForHumans() }}
+                <p class="mt-4 text-sm leading-6 text-[var(--muted)]">{{ $paste->excerpt(140) }}</p>
+                @if ($paste->published_tag_list)
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach ($paste->published_tag_list as $tag)
+                            <a href="{{ route('pastes.explore', ['tag' => $tag]) }}" class="tag-chip">#{{ $tag }}</a>
+                        @endforeach
+                    </div>
                 @endif
-            </span>
-        </a>
-    @empty
-        <p class="text-gray-500 text-center py-8">No pastes yet. Create the first one!</p>
-    @endforelse
-</div>
+            </article>
+        @empty
+            <p class="text-[var(--muted)]">No public posts yet. Publish the first one from a private draft.</p>
+        @endforelse
+    </div>
+</section>
 @endsection

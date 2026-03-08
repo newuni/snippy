@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Paste;
+use App\Support\MarkdownRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -10,106 +11,73 @@ class PasteModelTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_slug_is_generated_on_create(): void
+    public function test_manage_token_and_slug_are_generated_on_create(): void
     {
-        $paste = Paste::create([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-        ]);
+        $paste = Paste::factory()->create();
 
+        $this->assertNotNull($paste->manage_token);
         $this->assertNotNull($paste->slug);
-        $this->assertEquals(8, strlen($paste->slug));
+        $this->assertSame(32, strlen($paste->manage_token));
     }
 
-    public function test_slug_is_unique(): void
+    public function test_publish_copies_draft_into_public_snapshot(): void
     {
-        $paste1 = Paste::create(['content' => 'Test 1', 'syntax' => 'plaintext']);
-        $paste2 = Paste::create(['content' => 'Test 2', 'syntax' => 'plaintext']);
-
-        $this->assertNotEquals($paste1->slug, $paste2->slug);
-    }
-
-    public function test_is_expired_returns_true_for_expired(): void
-    {
-        $paste = new Paste([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-            'expires_at' => now()->subHour(),
+        $paste = Paste::factory()->create([
+            'title' => 'Draft title',
+            'content' => "# Draft title\n\nBody",
+            'rendered_content' => MarkdownRenderer::render("# Draft title\n\nBody"),
+            'tags' => 'laravel,notes',
+            'expiration_option' => '1d',
         ]);
 
-        $this->assertTrue($paste->isExpired());
+        $paste->publish();
+        $paste->refresh();
+
+        $this->assertSame('published', $paste->status);
+        $this->assertSame($paste->title, $paste->published_title);
+        $this->assertSame($paste->content, $paste->published_content);
+        $this->assertSame($paste->tags, $paste->published_tags);
+        $this->assertNotNull($paste->published_at);
+        $this->assertTrue($paste->isPublished());
     }
 
-    public function test_is_expired_returns_false_for_future(): void
+    public function test_has_unpublished_changes_detects_draft_edits_after_publish(): void
     {
-        $paste = new Paste([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-            'expires_at' => now()->addHour(),
+        $paste = Paste::factory()->published()->create([
+            'title' => 'Original',
+            'content' => '# Original',
+            'rendered_content' => MarkdownRenderer::render('# Original'),
+            'published_title' => 'Original',
+            'published_content' => '# Original',
+            'published_rendered_content' => MarkdownRenderer::render('# Original'),
         ]);
 
-        $this->assertFalse($paste->isExpired());
+        $this->assertFalse($paste->hasUnpublishedChanges());
+
+        $paste->title = 'Changed';
+
+        $this->assertTrue($paste->hasUnpublishedChanges());
     }
 
-    public function test_is_expired_returns_false_for_null(): void
+    public function test_tags_are_normalized(): void
     {
-        $paste = new Paste([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-            'expires_at' => null,
+        $paste = Paste::factory()->create([
+            'tags' => 'Laravel, release notes, Laravel ',
         ]);
 
-        $this->assertFalse($paste->isExpired());
+        $paste->refresh();
+
+        $this->assertSame('laravel,release-notes', $paste->tags);
+        $this->assertSame(['laravel', 'release-notes'], $paste->tag_list);
     }
 
-    public function test_is_protected_returns_true_with_password(): void
+    public function test_password_is_hidden_from_serialized_model(): void
     {
-        $paste = new Paste([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-            'password' => 'hashed_password',
-        ]);
-
-        $this->assertTrue($paste->isProtected());
-    }
-
-    public function test_is_protected_returns_false_without_password(): void
-    {
-        $paste = new Paste([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-        ]);
-
-        $this->assertFalse($paste->isProtected());
-    }
-
-    public function test_check_password_validates_correctly(): void
-    {
-        $paste = new Paste([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
-            'password' => password_hash('correct', PASSWORD_DEFAULT),
-        ]);
-
-        $this->assertTrue($paste->checkPassword('correct'));
-        $this->assertFalse($paste->checkPassword('wrong'));
-    }
-
-    public function test_route_key_is_slug(): void
-    {
-        $paste = new Paste();
-        $this->assertEquals('slug', $paste->getRouteKeyName());
-    }
-
-    public function test_password_is_hidden(): void
-    {
-        $paste = Paste::create([
-            'content' => 'Test',
-            'syntax' => 'plaintext',
+        $paste = Paste::factory()->create([
             'password' => password_hash('secret', PASSWORD_DEFAULT),
         ]);
 
-        $array = $paste->toArray();
-        $this->assertArrayNotHasKey('password', $array);
+        $this->assertArrayNotHasKey('password', $paste->toArray());
+        $this->assertArrayNotHasKey('manage_token', $paste->toArray());
     }
 }

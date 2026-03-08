@@ -3,37 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Snippy' }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
-    <nav class="bg-gray-800 border-b border-gray-700">
-        <div class="max-w-5xl mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <a href="{{ route('pastes.index') }}" class="text-xl font-bold text-indigo-400">✂️ Snippy</a>
-                <a href="{{ route('pastes.create') }}" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition">
-                    + New Paste
-                </a>
+<body class="min-h-screen bg-[var(--paper)] text-[var(--ink)]">
+    <div class="page-shell">
+        <header class="border-b border-[var(--line)] bg-white/70 backdrop-blur">
+            <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+                <div class="flex items-center gap-8">
+                    <a href="{{ route('pastes.index') }}" class="brand-mark">Snippy</a>
+                    <nav class="hidden items-center gap-5 text-sm font-medium text-[var(--muted)] sm:flex">
+                        <a href="{{ route('pastes.index') }}" class="hover:text-[var(--ink)]">Home</a>
+                        <a href="{{ route('pastes.explore') }}" class="hover:text-[var(--ink)]">Explore</a>
+                    </nav>
+                </div>
+                <a href="{{ route('pastes.create') }}" class="btn btn-primary">New draft</a>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-8">
-        @if(session('success'))
-            <div class="bg-green-600/20 border border-green-500 text-green-400 px-4 py-3 rounded-lg mb-6">
-                {{ session('success') }}
-            </div>
-        @endif
+        <main class="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8">
+            @if (session('success'))
+                <div class="notice notice-success mb-6">{{ session('success') }}</div>
+            @endif
 
-        @yield('content')
-    </main>
+            @if ($errors->any())
+                <div class="notice notice-error mb-6">
+                    {{ $errors->first() }}
+                </div>
+            @endif
 
-    <footer class="text-center py-6 text-gray-500 text-sm">
-        Share code snippets · Built with Laravel
-    </footer>
-
-    <script>hljs.highlightAll();</script>
+            @yield('content')
+        </main>
+    </div>
 </body>
 </html>

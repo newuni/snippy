@@ -1,49 +1,39 @@
-@extends('pastes.layout', ['title' => ($paste->title ?: 'Untitled') . ' - Pastebin'])
+@extends('pastes.layout', ['title' => ($paste->published_title ?: 'Untitled') . ' - Snippy'])
 
 @section('content')
-<div class="bg-gray-800 rounded-xl overflow-hidden">
-    <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+<article class="panel mx-auto max-w-4xl">
+    <div class="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--line)] pb-6">
         <div>
-            <h1 class="text-xl font-bold">{{ $paste->title ?: 'Untitled' }}</h1>
-            <p class="text-gray-400 text-sm mt-1">
-                Created {{ $paste->created_at->diffForHumans() }}
-                @if($paste->expires_at)
+            <p class="eyebrow">Published post</p>
+            <h1 class="mt-2 text-4xl font-semibold tracking-tight">{{ $paste->published_title ?: 'Untitled' }}</h1>
+            <p class="mt-3 text-sm text-[var(--muted)]">
+                Published {{ optional($paste->published_at)->diffForHumans() }}
+                @if ($paste->expires_at)
                     · Expires {{ $paste->expires_at->diffForHumans() }}
+                @endif
+                @if ($paste->isProtected())
+                    · Password protected
                 @endif
             </p>
         </div>
-        <div class="flex gap-2">
-            <span class="text-xs px-3 py-1 bg-gray-600 rounded-full">{{ $paste->syntax }}</span>
-            <a href="{{ route('pastes.raw', $paste) }}" 
-               class="text-xs px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-full transition"
-               target="_blank">
-                Raw
-            </a>
-            <button onclick="copyToClipboard()" 
-                    class="text-xs px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-full transition">
-                Copy
-            </button>
+
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('pastes.raw', ['paste' => $paste->slug]) }}" class="btn btn-secondary" target="_blank" rel="noreferrer">Raw markdown</a>
+            <input id="public-link" class="link-field w-full min-w-72" type="text" readonly value="{{ route('pastes.show', ['paste' => $paste->slug]) }}">
+            <button class="btn btn-primary" type="button" data-copy-target="public-link">Copy link</button>
         </div>
     </div>
 
-    <div class="relative">
-        <pre class="!m-0 !rounded-none"><code id="paste-content" class="language-{{ $paste->syntax }}">{{ $paste->content }}</code></pre>
+    @if ($paste->published_tag_list)
+        <div class="mt-5 flex flex-wrap gap-2">
+            @foreach ($paste->published_tag_list as $tag)
+                <a href="{{ route('pastes.explore', ['tag' => $tag]) }}" class="tag-chip">#{{ $tag }}</a>
+            @endforeach
+        </div>
+    @endif
+
+    <div class="markdown-body mt-8">
+        {!! $paste->published_rendered_content !!}
     </div>
-</div>
-
-<div class="mt-4 text-center">
-    <span class="text-gray-500 text-sm">Share: </span>
-    <input type="text" readonly value="{{ route('pastes.show', $paste) }}" 
-           class="bg-gray-700 border border-gray-600 rounded px-3 py-1 text-sm w-96 text-center"
-           onclick="this.select()">
-</div>
-
-<script>
-function copyToClipboard() {
-    const content = document.getElementById('paste-content').textContent;
-    navigator.clipboard.writeText(content).then(() => {
-        alert('Copied to clipboard!');
-    });
-}
-</script>
+</article>
 @endsection
