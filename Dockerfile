@@ -8,10 +8,12 @@ RUN apk add --no-cache \
     libzip-dev \
     zip \
     unzip \
-    supervisor
+    supervisor \
+    nodejs \
+    npm
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql zip opcache
+RUN docker-php-ext-install pdo pdo_pgsql zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -24,6 +26,8 @@ COPY . .
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN npm install --no-audit --no-fund
+RUN npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \

@@ -1,73 +1,90 @@
-# ✂️ Snippy
+# ✂️ Snippy v1
 
-A simple, self-hosted code snippet sharing app. Share code with syntax highlighting, optional password protection, and auto-expiration.
+Draft-first markdown publishing for internal notes and public posts.
 
-## Features
+## What changed in v1
 
-- 📝 **Share code snippets** — Paste code or text and get a shareable link
-- 🎨 **Syntax highlighting** — Support for 11 languages (PHP, JavaScript, Python, SQL, etc.)
-- 🔒 **Password protection** — Make snippets private with optional password
-- ⏰ **Expiration** — Auto-delete snippets after 10min, 1h, 1d, 1w, or 1 month
-- 📋 **Raw view** — Get plain text version for easy copying
-- 🌙 **Dark theme** — Easy on the eyes
+- ✍️ **Markdown editor + live preview** (server-rendered markdown)
+- 💾 **Autosave while typing** (debounced, private draft updates)
+- 🔒 **Private-by-default drafts** via unguessable manage link
+- 🚀 **Explicit publish action** to push a snapshot public
+- 🔗 **Two links per post**
+  - **Manage link**: private editing URL (`/manage/{manage_token}`)
+  - **Public link**: reader URL (`/p/{slug}`)
+- 🌍 **Explore page** for published posts (`/explore`) with search + tag filter
+- 🧷 Optional public password + expiration rules preserved
 
-## Quick Start
+## Routes (v1)
+
+- `GET /new` → creates draft + redirects to manage URL
+- `GET /manage/{manage_token}` → editor
+- `PUT /manage/{manage_token}/autosave` → autosave endpoint
+- `POST /manage/{manage_token}/publish` → publish snapshot
+- `POST /manage/{manage_token}/unpublish` → set back to draft
+- `GET /p/{slug}` → public page
+- `GET /explore` → published index/search/tags
+
+## Quick start (Docker Compose)
 
 ```bash
-# Clone
 git clone https://github.com/newuni/snippy.git
 cd snippy
+cp .env.docker.example .env
+# set APP_KEY, DB_PASSWORD, APP_URL
 
-# Configure
-cp .env.docker.example .env.docker
-# Edit .env.docker with your secrets
-
-# Run
-docker compose --env-file .env.docker up -d
+docker compose up -d --build
 ```
 
-Access at http://localhost:8081
+By default app listens on `127.0.0.1:${APP_PORT:-8081}`.
 
-## Configuration
+## Internal deployment with Caddy (newuni.org)
 
-Edit `.env.docker`:
+Recommended host: **`snippy.newuni.org`**
 
-```env
-APP_KEY=base64:your-generated-key-here
-APP_URL=http://your-domain.com
-APP_PORT=8081
+1) Keep Snippy private on loopback:
+- Docker maps app to `127.0.0.1:8081`
 
-DB_DATABASE=snippy
-DB_USERNAME=snippy
-DB_PASSWORD=your-secure-password
+2) Add Caddy site block:
+
+```caddyfile
+snippy.newuni.org {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8081
+    header {
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+    }
+}
 ```
 
-Generate an APP_KEY:
+3) Reload Caddy:
+
 ```bash
-php artisan key:generate --show
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
 ```
 
-## Tech Stack
+## Testing
 
-- **Backend:** Laravel 12 (PHP 8.3)
-- **Database:** PostgreSQL 16
-- **Frontend:** Tailwind CSS + Highlight.js
-- **Deployment:** Docker Compose
+### PHP tests
 
-## License
+```bash
+php artisan test
+```
 
-MIT (see [`LICENSE`](./LICENSE))
+If local PHP misses sqlite driver, run tests inside app container configured with PostgreSQL.
 
+### Playwright e2e
 
-## Third-Party Services & Trademarks
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
 
-This project uses third-party open-source components (Laravel, PostgreSQL, Docker, Highlight.js).
-All trademarks are property of their respective owners; no affiliation/endorsement is implied.
+E2E covers: draft creation → autosave preview → publish → explore visibility.
 
+## Release notes
 
-## Responsible Use
-
-Use this software only for lawful purposes.
-Do not use it for unauthorized access, abuse, or illegal content distribution.
-
-See [`SECURITY.md`](./SECURITY.md).
+See [CHANGELOG.md](./CHANGELOG.md).
