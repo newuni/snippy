@@ -59,7 +59,7 @@ class Paste extends Model
     public static function generateSlug(): string
     {
         do {
-            $slug = 'note-'.Str::lower(Str::random(6));
+            $slug = Str::lower(Str::random(10));
         } while (self::where('slug', $slug)->exists());
 
         return $slug;
@@ -132,12 +132,13 @@ class Paste extends Model
     public static function generateSlugFromTitle(?string $title): string
     {
         $base = Str::slug((string) $title);
-        $base = $base !== '' ? Str::limit($base, 48, '') : 'note';
+        $base = $base !== '' ? Str::limit($base, 10, '') : 'note';
         $slug = $base;
         $suffix = 2;
 
         while (self::where('slug', $slug)->exists()) {
-            $slug = Str::limit($base, 42, '').'-'.$suffix;
+            $suffixText = (string) $suffix;
+            $slug = Str::limit($base, 10 - (strlen($suffixText) + 1), '').'-'.$suffixText;
             $suffix++;
         }
 
@@ -146,7 +147,7 @@ class Paste extends Model
 
     public function publish(): void
     {
-        if (!$this->published_at && filled($this->title) && Str::startsWith($this->slug, 'note-')) {
+        if (!$this->published_at && filled($this->title)) {
             $this->slug = self::generateSlugFromTitle($this->title);
         }
 
