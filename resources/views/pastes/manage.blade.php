@@ -29,18 +29,18 @@
             </div>
         </div>
 
-        <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="mt-6 grid gap-4">
             <div>
                 <label class="label" for="manage-link">Manage link</label>
                 <div class="flex gap-2">
-                    <input id="manage-link" class="link-field" type="text" readonly value="{{ route('pastes.manage', ['paste' => $paste->manage_token]) }}">
+                    <input id="manage-link" class="link-field min-w-0 flex-1" type="text" readonly value="{{ route('pastes.manage', ['paste' => $paste->manage_token]) }}">
                     <button type="button" class="btn btn-secondary shrink-0" data-copy-target="manage-link">Copy</button>
                 </div>
             </div>
             <div>
                 <label class="label" for="public-link">Public link</label>
                 <div class="flex gap-2">
-                    <input id="public-link" class="link-field" type="text" readonly value="{{ $paste->isPublished() ? route('pastes.show', ['paste' => $paste->slug]) : 'Not published yet' }}" data-public-link>
+                    <input id="public-link" class="link-field min-w-0 flex-1" type="text" readonly value="{{ $paste->isPublished() ? route('pastes.show', ['paste' => $paste->slug]) : 'Not published yet' }}" data-public-link>
                     <button type="button" class="btn btn-secondary shrink-0" data-copy-target="public-link">Copy</button>
                 </div>
             </div>

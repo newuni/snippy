@@ -5,6 +5,12 @@ test('draft autosaves, publishes, and appears on explore', async ({ page }, test
   await page.getByRole('button', { name: 'New draft' }).click();
   await expect(page).toHaveURL(/\/manage\//);
 
+  const manageLinkBox = await page.locator('#manage-link').boundingBox();
+  const publicLinkBox = await page.locator('#public-link').boundingBox();
+  expect(manageLinkBox).not.toBeNull();
+  expect(publicLinkBox).not.toBeNull();
+  expect(publicLinkBox.y).toBeGreaterThan(manageLinkBox.y + manageLinkBox.height);
+
   const unique = `${Date.now()}-${testInfo.project.name}`;
   const title = `Release ${unique}`;
   const markdown = `# ${title}\n\nShipped from e2e test.`;
