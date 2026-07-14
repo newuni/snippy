@@ -187,8 +187,11 @@ class PastePublishingTest extends TestCase
             ->assertOk()
             ->assertSee('Release Notes')
             ->assertSee('Shipped today.')
-            ->assertSee('Copy article')
+            ->assertSee('Copy markdown')
             ->assertSee('data-copy-target="article-markdown"', false)
+            ->assertSee('Copy body')
+            ->assertSee('data-copy-target="article-body"', false)
+            ->assertSee('id="article-body"', false)
             ->assertSee("# Release Notes\n\nShipped today.");
 
         $this->get('/explore')

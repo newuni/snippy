@@ -9,9 +9,12 @@ document.querySelectorAll('[data-copy-target]').forEach((button) => {
         }
 
         const original = button.textContent;
+        const text = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+            ? target.value
+            : target.innerText.trim();
 
         try {
-            await copyText(target.value);
+            await copyText(text);
             button.textContent = 'Copied';
         } catch (error) {
             button.textContent = 'Copy failed';

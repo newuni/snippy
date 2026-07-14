@@ -34,4 +34,10 @@ test('draft autosaves, publishes, and appears on explore', async ({ page }, test
   await expect(copyArticleButton).toHaveText('Copied');
   const copiedMarkdown = await page.evaluate(() => navigator.clipboard.readText());
   expect(copiedMarkdown).toBe(markdown);
+
+  const copyBodyButton = page.locator('[data-copy-target="article-body"]');
+  await copyBodyButton.click();
+  await expect(copyBodyButton).toHaveText('Copied');
+  const copiedBody = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copiedBody).toBe(`${title}\n\nShipped from e2e test.`);
 });

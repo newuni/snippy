@@ -40,7 +40,7 @@
 
         <div class="flex flex-wrap gap-2">
             <textarea id="article-markdown" hidden readonly>{{ $paste->published_content }}</textarea>
-            <button class="btn btn-secondary" type="button" data-copy-target="article-markdown">Copy article</button>
+            <button class="btn btn-secondary" type="button" data-copy-target="article-markdown">Copy markdown</button>
             <a href="{{ route('pastes.raw', ['paste' => $paste->slug]) }}" class="btn btn-secondary" target="_blank" rel="noreferrer">Raw markdown</a>
             <input id="public-link" class="link-field w-full min-w-72" type="text" readonly value="{{ route('pastes.show', ['paste' => $paste->slug]) }}">
             <button class="btn btn-primary" type="button" data-copy-target="public-link">Copy link</button>
@@ -55,8 +55,11 @@
         </div>
     @endif
 
-    <div class="markdown-body mt-8">
-        {!! $paste->published_rendered_content !!}
+    <div class="mt-8 flow-root">
+        <button class="btn btn-secondary mb-4 w-full sm:float-right sm:mb-3 sm:ml-4 sm:w-auto" type="button" data-copy-target="article-body" aria-label="Copy article body">Copy body</button>
+        <div id="article-body" class="markdown-body">
+            {!! $paste->published_rendered_content !!}
+        </div>
     </div>
 </article>
 @endsection
