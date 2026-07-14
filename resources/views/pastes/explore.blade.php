@@ -1,4 +1,8 @@
-@extends('pastes.layout', ['title' => 'Explore - Snippy'])
+@extends('pastes.layout', [
+    'title' => 'Explore - Snippy',
+    'description' => 'Search public, non-password-protected Markdown posts published with Snippy.',
+    'canonical' => route('pastes.explore'),
+])
 
 @section('content')
 <section class="panel">
@@ -6,7 +10,7 @@
         <div>
             <p class="eyebrow">Explore</p>
             <h1 class="mt-2 text-4xl font-semibold tracking-tight">Published markdown posts</h1>
-            <p class="mt-3 max-w-2xl text-sm text-[var(--muted)]">Search title, markdown body, or tags. Password-protected posts are listed here only if they were explicitly published.</p>
+            <p class="mt-3 max-w-2xl text-sm text-[var(--muted)]">Search title, Markdown body, or tags across public posts. Password-protected posts are excluded from discovery.</p>
         </div>
 
         <form action="{{ route('pastes.explore') }}" method="GET" class="flex w-full max-w-2xl flex-col gap-3 md:flex-row">
@@ -40,9 +44,6 @@
                         @endif
                     </p>
                 </div>
-                @if ($post->isProtected())
-                    <span class="pill">Protected</span>
-                @endif
             </div>
 
             <p class="mt-4 text-sm leading-6 text-[var(--muted)]">{{ $post->excerpt(170) }}</p>

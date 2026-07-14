@@ -1,4 +1,7 @@
-@extends('pastes.layout', ['title' => ($paste->title ?: 'Untitled Draft') . ' - Manage - Snippy'])
+@extends('pastes.layout', [
+    'title' => ($paste->title ?: 'Untitled Draft') . ' - Manage - Snippy',
+    'robots' => 'noindex, nofollow, noarchive',
+])
 
 @section('content')
 <section class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]" data-editor-root>

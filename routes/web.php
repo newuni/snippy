@@ -5,7 +5,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PasteController::class, 'index'])->name('pastes.index');
 Route::get('/explore', [PasteController::class, 'explore'])->name('pastes.explore');
-Route::get('/new', [PasteController::class, 'create'])->name('pastes.create');
+Route::post('/new', [PasteController::class, 'create'])->name('pastes.create');
+Route::get('/llms.txt', [PasteController::class, 'agentGuide'])->name('agent.llms');
+Route::get('/llms-full.txt', [PasteController::class, 'agentCorpus'])->name('agent.corpus');
+Route::get('/agents.txt', [PasteController::class, 'agentsPolicy'])->name('agent.policy');
+Route::get('/robots.txt', [PasteController::class, 'robots'])->name('agent.robots');
+Route::get('/sitemap.xml', [PasteController::class, 'sitemap'])->name('agent.sitemap');
 Route::get('/manage/{paste:manage_token}', [PasteController::class, 'manage'])->name('pastes.manage');
 Route::put('/manage/{paste:manage_token}/autosave', [PasteController::class, 'autosave'])->name('pastes.autosave');
 Route::post('/manage/{paste:manage_token}/publish', [PasteController::class, 'publish'])->name('pastes.publish');

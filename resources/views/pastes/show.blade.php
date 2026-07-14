@@ -1,4 +1,25 @@
-@extends('pastes.layout', ['title' => ($paste->published_title ?: 'Untitled') . ' - Snippy'])
+@extends('pastes.layout', [
+    'title' => ($paste->published_title ?: 'Untitled') . ' - Snippy',
+    'description' => $paste->excerpt(160),
+    'canonical' => route('pastes.show', ['paste' => $paste->slug]),
+    'robots' => $paste->isProtected() ? 'noindex, nofollow, noarchive' : 'index, follow',
+    'alternateMarkdown' => route('pastes.raw', ['paste' => $paste->slug]),
+    'openGraphType' => 'article',
+    'structuredData' => [
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $paste->published_title ?: 'Untitled',
+        'datePublished' => optional($paste->published_at)->toIso8601String(),
+        'dateModified' => optional($paste->updated_at)->toIso8601String(),
+        'url' => route('pastes.show', ['paste' => $paste->slug]),
+        'isAccessibleForFree' => true,
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            'name' => 'Snippy',
+            'url' => route('pastes.index'),
+        ],
+    ],
+])
 
 @section('content')
 <article class="panel mx-auto max-w-4xl">

@@ -1,4 +1,8 @@
-@extends('pastes.layout', ['title' => 'Protected Post - Snippy'])
+@extends('pastes.layout', [
+    'title' => 'Protected Post - Snippy',
+    'description' => 'This Snippy post is password protected.',
+    'robots' => 'noindex, nofollow, noarchive',
+])
 
 @section('content')
 <div class="mx-auto max-w-md">

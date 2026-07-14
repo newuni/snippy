@@ -11,7 +11,10 @@
             Snippy v1 keeps a private manage link for editing and a separate public URL for readers. Markdown preview, tags, raw output, expiration, and legacy public passwords still work.
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
-            <a href="{{ route('pastes.create') }}" class="btn btn-primary">Start a draft</a>
+            <form action="{{ route('pastes.create') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-primary">Start a draft</button>
+            </form>
             <a href="{{ route('pastes.explore') }}" class="btn btn-secondary">Browse published posts</a>
         </div>
     </div>
@@ -19,7 +22,7 @@
     <div class="panel">
         <p class="eyebrow">How it works</p>
         <ol class="mt-5 space-y-4 text-sm text-[var(--muted)]">
-            <li><span class="step-index">1</span> `GET /new` creates a private draft and redirects to its manage URL.</li>
+            <li><span class="step-index">1</span> `POST /new` creates a private draft after an explicit human action.</li>
             <li><span class="step-index">2</span> Typing triggers debounced autosave and server-rendered markdown preview updates.</li>
             <li><span class="step-index">3</span> `POST /manage/{token}/publish` snapshots the draft to the public slug URL.</li>
         </ol>

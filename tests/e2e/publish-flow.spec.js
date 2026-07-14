@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test('draft autosaves, publishes, and appears on explore', async ({ page }, testInfo) => {
-  await page.goto('/new');
+  await page.goto('/');
+  await page.getByRole('button', { name: 'New draft' }).click();
   await expect(page).toHaveURL(/\/manage\//);
 
   const unique = `${Date.now()}-${testInfo.project.name}`;

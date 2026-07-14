@@ -16,13 +16,19 @@ Draft-first markdown publishing for internal notes and public posts.
 
 ## Routes (v1)
 
-- `GET /new` → creates draft + redirects to manage URL
+- `POST /new` → creates draft after an explicit browser action + redirects to manage URL
 - `GET /manage/{manage_token}` → editor
 - `PUT /manage/{manage_token}/autosave` → autosave endpoint
 - `POST /manage/{manage_token}/publish` → publish snapshot
 - `POST /manage/{manage_token}/unpublish` → set back to draft
 - `GET /p/{slug}` → public page
 - `GET /explore` → published index/search/tags
+- `GET /llms.txt` → concise operating guide for agents
+- `GET /llms-full.txt` → public, non-protected Markdown corpus
+- `GET /agents.txt` → access boundaries for automated agents
+- `GET /sitemap.xml` → discoverable public URLs
+
+Password-protected posts are intentionally excluded from Home, Explore, sitemap, and agent feeds. Draft creation is POST-only so crawlers cannot create database records by following a link.
 
 ## Quick start (Docker Compose)
 

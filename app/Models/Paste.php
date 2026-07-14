@@ -127,6 +127,10 @@ class Paste extends Model
 
     public function excerpt(int $limit = 180): string
     {
+        if ($this->isProtected()) {
+            return 'Password-protected post.';
+        }
+
         return MarkdownRenderer::excerpt($this->published_content ?? $this->content, $limit);
     }
 
@@ -187,6 +191,13 @@ class Paste extends Model
                 $builder->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             });
+    }
+
+    public function scopePubliclyDiscoverable(Builder $query): Builder
+    {
+        return $query
+            ->published()
+            ->whereNull('password');
     }
 
     public function scopeSearchPublished(Builder $query, ?string $search): Builder
