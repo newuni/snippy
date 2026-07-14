@@ -15,4 +15,6 @@ jobs:
         with:
           php-version: '8.3'
       - run: composer validate --no-check-publish
+      - name: Prepare Compose environment
+        run: cp .env.example .env
       - run: docker compose config > /dev/null
