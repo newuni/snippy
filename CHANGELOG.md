@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Changed
+- Upgraded the application to Laravel 13, Tinker 3, PHPUnit 12, Vite 8, Tailwind CSS 4.3, and the latest compatible Composer/npm dependencies.
+- Raised the supported PHP baseline to 8.3 and the Node.js baseline to 22.12.
+- Made Docker builds reproducible with `npm ci` and removed unused Sail and Axios dependencies.
+
+### Fixed
+- Retry title-based slug allocation when concurrent publishes race for the same unique slug.
+- Avoid passing a null application URL to `rtrim` during configuration loading.
+
+### Security
+- Disabled cache object unserialization and refreshed lock files until both Composer and npm audits report no known vulnerabilities.
+
 ## [1.0.0] - 2026-03-08
 
 ### Added

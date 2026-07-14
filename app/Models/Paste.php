@@ -6,6 +6,7 @@ use App\Support\MarkdownRenderer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 
 class Paste extends Model
@@ -76,7 +77,7 @@ class Paste extends Model
 
     public function isProtected(): bool
     {
-        return !empty($this->password);
+        return ! empty($this->password);
     }
 
     public function checkPassword(string $password): bool
@@ -91,7 +92,7 @@ class Paste extends Model
 
     public function isPublished(): bool
     {
-        return $this->status === 'published' && !empty($this->published_content) && !$this->isExpired();
+        return $this->status === 'published' && ! empty($this->published_content) && ! $this->isExpired();
     }
 
     public function hasUnpublishedChanges(): bool
@@ -138,7 +139,8 @@ class Paste extends Model
 
         while (self::where('slug', $slug)->exists()) {
             $suffixText = (string) $suffix;
-            $slug = Str::limit($base, 10 - (strlen($suffixText) + 1), '').'-'.$suffixText;
+            $prefix = rtrim(Str::limit($base, 10 - (strlen($suffixText) + 1), ''), '-');
+            $slug = $prefix.'-'.$suffixText;
             $suffix++;
         }
 
@@ -147,7 +149,9 @@ class Paste extends Model
 
     public function publish(): void
     {
-        if (!$this->published_at && filled($this->title)) {
+        $assignsPublishedSlug = ! $this->published_at && filled($this->title);
+
+        if ($assignsPublishedSlug) {
             $this->slug = self::generateSlugFromTitle($this->title);
         }
 
@@ -158,7 +162,20 @@ class Paste extends Model
         $this->published_at = now();
         $this->status = 'published';
         $this->expires_at = $this->resolveExpirationTimestamp();
-        $this->save();
+
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            try {
+                $this->save();
+
+                return;
+            } catch (UniqueConstraintViolationException $exception) {
+                if (! $assignsPublishedSlug || $attempt === 9) {
+                    throw $exception;
+                }
+
+                $this->slug = self::generateSlugFromTitle($this->title);
+            }
+        }
     }
 
     public function scopePublished(Builder $query): Builder

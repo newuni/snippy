@@ -41,6 +41,18 @@ class PasteModelTest extends TestCase
         $this->assertTrue($paste->isPublished());
     }
 
+    public function test_publish_generates_unique_slugs_for_matching_titles(): void
+    {
+        $first = Paste::factory()->create(['title' => 'Release 1784023767431']);
+        $second = Paste::factory()->create(['title' => 'Release 1784023767431']);
+
+        $first->publish();
+        $second->publish();
+
+        $this->assertSame('release-17', $first->slug);
+        $this->assertSame('release-2', $second->slug);
+    }
+
     public function test_has_unpublished_changes_detects_draft_edits_after_publish(): void
     {
         $paste = Paste::factory()->published()->create([
