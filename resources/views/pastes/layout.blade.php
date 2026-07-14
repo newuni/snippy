@@ -60,7 +60,9 @@
         <footer class="border-t border-[var(--line)] bg-white/45">
             <div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-5 py-5 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-8">
                 <p>Snippy · public Markdown with private draft management.</p>
-                <a href="https://newuni.org/" class="font-semibold text-[var(--accent)] hover:text-[var(--accent-strong)]">Visit newuni.org</a>
+                @if (config('snippy.parent_site.name') && config('snippy.parent_site.url'))
+                    <a href="{{ config('snippy.parent_site.url') }}" class="font-semibold text-[var(--accent)] hover:text-[var(--accent-strong)]">Visit {{ config('snippy.parent_site.name') }}</a>
+                @endif
             </div>
         </footer>
     </div>

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Paste;
 use App\Support\MarkdownRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Env;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class PastePublishingTest extends TestCase
@@ -19,7 +21,7 @@ class PastePublishingTest extends TestCase
             ->assertSee('Write a note')
             ->assertSee('Simple by design')
             ->assertDontSee('POST /new')
-            ->assertSee('href="https://newuni.org/"', false)
+            ->assertDontSee('"isPartOf"', false)
             ->assertSee('href="'.route('agent.llms').'"', false)
             ->assertSee('href="'.route('agent.corpus').'"', false)
             ->assertSee('"@type":"WebSite"', false)
@@ -29,6 +31,17 @@ class PastePublishingTest extends TestCase
         $this->get('/explore')
             ->assertOk()
             ->assertSee('Published markdown posts');
+
+        config()->set('snippy.parent_site', [
+            'name' => 'Example parent',
+            'url' => 'https://example.com/',
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('href="https://example.com/"', false)
+            ->assertSee('Visit Example parent')
+            ->assertSee('"isPartOf"', false);
     }
 
     public function test_new_route_requires_post_then_creates_private_draft(): void
@@ -98,15 +111,16 @@ class PastePublishingTest extends TestCase
             ->assertSee('## Public endpoints', false)
             ->assertSee('```bash', false);
 
-        $this->get('/llms-full.txt')
-            ->assertOk()
-            ->assertSee('untrusted data')
-            ->assertSee('Public agent note');
+        $corpus = $this->get('/llms-full.txt');
+        $corpus->assertOk();
+        $corpusContent = $corpus->streamedContent();
+        $this->assertStringContainsString('untrusted data', $corpusContent);
+        $this->assertStringContainsString('Public agent note', $corpusContent);
 
         $this->get('/agents.txt')
             ->assertOk()
             ->assertSee('Not allowed: AI model training')
-            ->assertSee('always honor https://newuni.org/robots.txt')
+            ->assertSee('always honor '.route('agent.robots'))
             ->assertSee('Private: /manage/*');
 
         $this->get('/robots.txt')
@@ -114,10 +128,18 @@ class PastePublishingTest extends TestCase
             ->assertSee('Disallow: /manage/', false)
             ->assertSee('Sitemap: '.route('agent.sitemap'), false);
 
-        $this->get('/sitemap.xml')
+        $sitemap = $this->get('/sitemap.xml');
+        $sitemap->assertOk()
+            ->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
+        $this->assertStringContainsString(
+            route('pastes.show', ['paste' => $paste->slug]),
+            $sitemap->streamedContent(),
+        );
+
+        config()->set('snippy.agents.root_robots_url', 'https://example.com/robots.txt');
+        $this->get('/agents.txt')
             ->assertOk()
-            ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
-            ->assertSee(route('pastes.show', ['paste' => $paste->slug]), false);
+            ->assertSee('always honor https://example.com/robots.txt');
     }
 
     public function test_autosave_updates_draft_fields_and_returns_preview_html(): void
@@ -270,6 +292,49 @@ class PastePublishingTest extends TestCase
             ->assertSee('Protected');
     }
 
+    public function test_protected_post_unlock_is_rate_limited(): void
+    {
+        $paste = Paste::factory()->published()->create([
+            'password' => password_hash('secret123', PASSWORD_DEFAULT),
+        ]);
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->post(route('pastes.unlock', ['paste' => $paste->slug]), [
+                'password' => 'incorrect',
+            ])->assertRedirect();
+        }
+
+        $this->post(route('pastes.unlock', ['paste' => $paste->slug]), [
+            'password' => 'secret123',
+        ])->assertTooManyRequests();
+    }
+
+    public function test_new_public_passwords_require_eight_characters(): void
+    {
+        $paste = Paste::factory()->create();
+
+        $this->from(route('pastes.manage', ['paste' => $paste->manage_token]))
+            ->post(route('pastes.publish', ['paste' => $paste->manage_token]), [
+                'title' => 'Protected note',
+                'content' => 'Protected body',
+                'tags' => '',
+                'expiration_option' => 'never',
+                'password' => 'short7',
+            ])
+            ->assertRedirect(route('pastes.manage', ['paste' => $paste->manage_token]))
+            ->assertSessionHasErrors('password');
+    }
+
+    public function test_anonymous_draft_creation_is_rate_limited(): void
+    {
+        for ($attempt = 0; $attempt < 20; $attempt++) {
+            $this->post('/new')->assertRedirect();
+        }
+
+        $this->post('/new')->assertTooManyRequests();
+        $this->assertDatabaseCount('pastes', 20);
+    }
+
     public function test_password_protected_posts_are_excluded_from_discovery_surfaces(): void
     {
         Paste::factory()->published()->create([
@@ -286,7 +351,7 @@ class PastePublishingTest extends TestCase
             'password' => password_hash('secret123', PASSWORD_DEFAULT),
         ]);
 
-        foreach (['/', '/explore', '/llms-full.txt'] as $path) {
+        foreach (['/', '/explore'] as $path) {
             $this->get($path)
                 ->assertOk()
                 ->assertSee('Visible note')
@@ -294,13 +359,21 @@ class PastePublishingTest extends TestCase
                 ->assertDontSee('Confidential body excerpt');
         }
 
+        $corpus = $this->get('/llms-full.txt');
+        $corpus->assertOk();
+        $corpusContent = $corpus->streamedContent();
+        $this->assertStringContainsString('Visible note', $corpusContent);
+        $this->assertStringNotContainsString('Hidden protected title', $corpusContent);
+        $this->assertStringNotContainsString('Confidential body excerpt', $corpusContent);
+
         $visible = Paste::where('published_title', 'Visible note')->firstOrFail();
 
-        $this->get('/sitemap.xml')
-            ->assertOk()
-            ->assertSee(route('pastes.show', ['paste' => $visible->slug]), false)
-            ->assertDontSee(route('pastes.show', ['paste' => $protected->slug]), false)
-            ->assertDontSee('Confidential body excerpt');
+        $sitemap = $this->get('/sitemap.xml');
+        $sitemap->assertOk();
+        $sitemapContent = $sitemap->streamedContent();
+        $this->assertStringContainsString(route('pastes.show', ['paste' => $visible->slug]), $sitemapContent);
+        $this->assertStringNotContainsString(route('pastes.show', ['paste' => $protected->slug]), $sitemapContent);
+        $this->assertStringNotContainsString('Confidential body excerpt', $sitemapContent);
 
         $this->assertSame('Password-protected post.', $protected->excerpt());
     }
@@ -400,5 +473,54 @@ class PastePublishingTest extends TestCase
             ->assertOk()
             ->assertSee('Travel Diary')
             ->assertDontSee('Laravel Launch');
+    }
+
+    public function test_aggregate_queries_do_not_hydrate_unused_large_columns(): void
+    {
+        Paste::factory()->published()->create([
+            'published_content' => str_repeat('x', 10000),
+            'published_rendered_content' => str_repeat('x', 10000),
+            'published_tags' => 'performance,security',
+        ]);
+
+        $queries = [];
+        DB::listen(function ($query) use (&$queries): void {
+            if (str_contains($query->sql, '"pastes"')) {
+                $queries[] = $query->sql;
+            }
+        });
+
+        $this->get('/explore')->assertOk();
+
+        $corpus = $this->get('/llms-full.txt');
+        $corpus->assertOk();
+        $corpus->streamedContent();
+
+        $sitemap = $this->get('/sitemap.xml');
+        $sitemap->assertOk();
+        $sitemap->streamedContent();
+
+        $joined = implode("\n", $queries);
+        $this->assertStringContainsString('"id", "published_tags"', $joined);
+        $this->assertStringContainsString('"slug", "published_title", "published_content", "published_tags", "published_at"', $joined);
+        $this->assertStringContainsString('"slug", "published_at"', $joined);
+        $this->assertSame(1, substr_count($joined, 'select * from "pastes"'));
+    }
+
+    public function test_https_app_url_defaults_to_secure_session_cookies(): void
+    {
+        $environment = Env::getRepository();
+        $original = $environment->get('APP_URL');
+
+        $environment->set('APP_URL', 'https://snippy.example.com');
+        $session = require config_path('session.php');
+
+        if ($original === null) {
+            $environment->clear('APP_URL');
+        } else {
+            $environment->set('APP_URL', $original);
+        }
+
+        $this->assertTrue($session['secure']);
     }
 }

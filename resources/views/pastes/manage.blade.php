@@ -88,7 +88,7 @@
             <div class="grid gap-4 md:grid-cols-[1fr_auto]">
                 <div>
                     <label class="label" for="password">Public password</label>
-                    <input id="password" class="input-field" type="password" name="password" autocomplete="new-password" minlength="4" maxlength="100" placeholder="{{ $paste->isProtected() ? 'Leave blank to keep current password' : 'Optional password for public readers' }}">
+                    <input id="password" class="input-field" type="password" name="password" autocomplete="new-password" minlength="8" maxlength="100" placeholder="{{ $paste->isProtected() ? 'Leave blank to keep current password' : 'Optional password for public readers' }}">
                     <p class="mt-2 text-xs text-[var(--muted)]" data-password-status>
                         {{ $paste->isProtected() ? 'A public password is active. Leave this blank to keep it unchanged.' : 'Optional. Drafts are already private by default.' }}
                     </p>

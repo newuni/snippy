@@ -1,15 +1,11 @@
-snippy.newuni.org {
+snippy.example.com {
     encode zstd gzip
     reverse_proxy 127.0.0.1:8081
 
     header {
         Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000"
         X-Content-Type-Options nosniff
         X-Frame-Options SAMEORIGIN
-    }
-
-    log {
-        output file /var/log/caddy/snippy.access.log
-        format console
     }
 }

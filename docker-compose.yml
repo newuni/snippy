@@ -29,15 +29,21 @@ services:
     image: postgres:16-alpine
     container_name: snippy-db
     restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - hba_file=/etc/postgresql/snippy-pg_hba.conf
+      - -c
+      - password_encryption=scram-sha-256
     env_file:
       - .env
     environment:
       POSTGRES_DB: "${DB_DATABASE:-snippy}"
       POSTGRES_USER: "${DB_USERNAME:-snippy}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
-      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - snippy-pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/pg_hba.conf:/etc/postgresql/snippy-pg_hba.conf:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-snippy}"]
       interval: 5s
