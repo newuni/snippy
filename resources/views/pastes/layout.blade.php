@@ -20,7 +20,7 @@
         <link rel="alternate" type="text/markdown" title="Raw Markdown" href="{{ $alternateMarkdown }}">
     @endisset
     @isset($structuredData)
-        <script type="application/ld+json">{{ Illuminate\Support\Js::from($structuredData) }}</script>
+        <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
     @endisset
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
