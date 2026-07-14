@@ -15,7 +15,10 @@ class PastePublishingTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Markdown publishing')
+            ->assertSee('A calm place for notes worth sharing.')
+            ->assertSee('Write a note')
+            ->assertSee('Simple by design')
+            ->assertDontSee('POST /new')
             ->assertSee('href="https://newuni.org/"', false)
             ->assertSee('href="'.route('agent.llms').'"', false)
             ->assertSee('href="'.route('agent.corpus').'"', false)

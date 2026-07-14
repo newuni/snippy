@@ -3,28 +3,29 @@
 @section('content')
 <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
     <div class="panel hero-panel">
-        <p class="eyebrow">Markdown publishing, not throwaway pastes</p>
+        <p class="eyebrow">Write first. Share when you’re ready.</p>
         <h1 class="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-            Draft privately, autosave continuously, and publish only when the page is ready.
+            A calm place for notes worth sharing.
         </h1>
         <p class="mt-5 max-w-2xl text-lg text-[var(--muted)]">
-            Snippy v1 keeps a private manage link for editing and a separate public URL for readers. Markdown preview, tags, raw output, expiration, and legacy public passwords still work.
+            Start with a private draft and take your time. Snippy saves as you write, shows you how your Markdown will look, and creates a public link only when you choose to publish. Add tags, an expiry date, or a password whenever you need them.
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
             <form action="{{ route('pastes.create') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-primary">Start a draft</button>
+                <button type="submit" class="btn btn-primary">Write a note</button>
             </form>
-            <a href="{{ route('pastes.explore') }}" class="btn btn-secondary">Browse published posts</a>
+            <a href="{{ route('pastes.explore') }}" class="btn btn-secondary">Explore public notes</a>
         </div>
     </div>
 
     <div class="panel">
-        <p class="eyebrow">How it works</p>
+        <p class="eyebrow">From draft to shared</p>
+        <h2 class="mt-2 text-2xl font-semibold">Simple by design</h2>
         <ol class="mt-5 space-y-4 text-sm text-[var(--muted)]">
-            <li><span class="step-index">1</span> `POST /new` creates a private draft after an explicit human action.</li>
-            <li><span class="step-index">2</span> Typing triggers debounced autosave and server-rendered markdown preview updates.</li>
-            <li><span class="step-index">3</span> `POST /manage/{token}/publish` snapshots the draft to the public slug URL.</li>
+            <li><span class="step-index">1</span> Open a private draft and write at your own pace.</li>
+            <li><span class="step-index">2</span> See your Markdown take shape while Snippy saves every change.</li>
+            <li><span class="step-index">3</span> Publish when you’re happy with it, then share the public link and keep the editing link to yourself.</li>
         </ol>
     </div>
 </section>
@@ -32,10 +33,10 @@
 <section class="mt-8 panel">
     <div class="flex items-center justify-between gap-4">
         <div>
-            <p class="eyebrow">Recent publications</p>
-            <h2 class="mt-2 text-2xl font-semibold">Fresh from Explore</h2>
+            <p class="eyebrow">Recently shared</p>
+            <h2 class="mt-2 text-2xl font-semibold">Latest public notes</h2>
         </div>
-        <a href="{{ route('pastes.explore') }}" class="text-sm font-medium text-[var(--accent)]">See all</a>
+        <a href="{{ route('pastes.explore') }}" class="text-sm font-medium text-[var(--accent)]">Explore all</a>
     </div>
 
     <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -65,7 +66,7 @@
                 @endif
             </article>
         @empty
-            <p class="text-[var(--muted)]">No public posts yet. Publish the first one from a private draft.</p>
+            <p class="text-[var(--muted)]">Nothing has been shared yet. Your note could be the first.</p>
         @endforelse
     </div>
 </section>

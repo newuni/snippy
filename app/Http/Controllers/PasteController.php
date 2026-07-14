@@ -27,13 +27,13 @@ class PasteController extends Controller
             ->view('pastes.index', [
                 'recent' => $recent,
                 'canonical' => route('pastes.index'),
-                'description' => 'Draft privately, publish Markdown explicitly, and browse public Snippy posts.',
+                'description' => 'A calm place to write in Markdown, keep drafts private, and share polished notes when they are ready.',
                 'structuredData' => [
                     '@context' => 'https://schema.org',
                     '@type' => 'WebSite',
                     'name' => 'Snippy',
                     'url' => route('pastes.index'),
-                    'description' => 'Draft-first Markdown publishing with separate private management and public reading URLs.',
+                    'description' => 'A calm place to write in Markdown, keep drafts private, and share polished notes when they are ready.',
                     'isPartOf' => [
                         '@type' => 'WebSite',
                         'name' => 'newuni.org',
