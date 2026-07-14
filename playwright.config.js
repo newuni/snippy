@@ -10,6 +10,7 @@ export default defineConfig({
   retries: 0,
   use: {
     baseURL,
+    permissions: ['clipboard-read', 'clipboard-write'],
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

@@ -18,6 +18,8 @@
         </div>
 
         <div class="flex flex-wrap gap-2">
+            <textarea id="article-markdown" hidden readonly>{{ $paste->published_content }}</textarea>
+            <button class="btn btn-secondary" type="button" data-copy-target="article-markdown">Copy article</button>
             <a href="{{ route('pastes.raw', ['paste' => $paste->slug]) }}" class="btn btn-secondary" target="_blank" rel="noreferrer">Raw markdown</a>
             <input id="public-link" class="link-field w-full min-w-72" type="text" readonly value="{{ route('pastes.show', ['paste' => $paste->slug]) }}">
             <button class="btn btn-primary" type="button" data-copy-target="public-link">Copy link</button>

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Added a `Copy article` action to published post pages for copying the full Markdown source with clipboard fallback support.
+
 ### Changed
 - Upgraded the application to Laravel 13, Tinker 3, PHPUnit 12, Vite 8, Tailwind CSS 4.3, and the latest compatible Composer/npm dependencies.
 - Raised the supported PHP baseline to 8.3 and the Node.js baseline to 22.12.

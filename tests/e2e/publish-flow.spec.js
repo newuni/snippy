@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test('draft autosaves, publishes, and appears on explore', async ({ page }) => {
+test('draft autosaves, publishes, and appears on explore', async ({ page }, testInfo) => {
   await page.goto('/new');
   await expect(page).toHaveURL(/\/manage\//);
 
-  const unique = Date.now();
+  const unique = `${Date.now()}-${testInfo.project.name}`;
   const title = `Release ${unique}`;
   const markdown = `# ${title}\n\nShipped from e2e test.`;
 
@@ -26,5 +26,11 @@ test('draft autosaves, publishes, and appears on explore', async ({ page }) => {
 
   await page.goto(publicLink);
   await expect(page.getByRole('heading', { name: title }).first()).toBeVisible();
-  await expect(page.getByText('Shipped from e2e test.')).toBeVisible();
+  await expect(page.locator('.markdown-body').getByText('Shipped from e2e test.', { exact: true })).toBeVisible();
+
+  const copyArticleButton = page.locator('[data-copy-target="article-markdown"]');
+  await copyArticleButton.click();
+  await expect(copyArticleButton).toHaveText('Copied');
+  const copiedMarkdown = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copiedMarkdown).toBe(markdown);
 });

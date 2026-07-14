@@ -99,7 +99,10 @@ class PastePublishingTest extends TestCase
         $this->get(route('pastes.show', ['paste' => $paste->slug]))
             ->assertOk()
             ->assertSee('Release Notes')
-            ->assertSee('Shipped today.');
+            ->assertSee('Shipped today.')
+            ->assertSee('Copy article')
+            ->assertSee('data-copy-target="article-markdown"', false)
+            ->assertSee("# Release Notes\n\nShipped today.");
 
         $this->get('/explore')
             ->assertOk()
