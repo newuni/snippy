@@ -16,6 +16,7 @@
     <meta property="og:title" content="{{ $title ?? 'Snippy' }}">
     <meta property="og:description" content="{{ $description ?? 'Draft-first Markdown publishing with private management and public reading URLs.' }}">
     <link rel="alternate" type="text/plain" title="Snippy agent guide" href="{{ route('agent.llms') }}">
+    <link rel="alternate" type="text/plain" title="Snippy full public corpus" href="{{ route('agent.corpus') }}">
     @isset($alternateMarkdown)
         <link rel="alternate" type="text/markdown" title="Raw Markdown" href="{{ $alternateMarkdown }}">
     @endisset

@@ -18,6 +18,7 @@ class PastePublishingTest extends TestCase
             ->assertSee('Markdown publishing')
             ->assertSee('href="https://newuni.org/"', false)
             ->assertSee('href="'.route('agent.llms').'"', false)
+            ->assertSee('href="'.route('agent.corpus').'"', false)
             ->assertSee('"@type":"WebSite"', false)
             ->assertDontSee('JSON.parse(', false)
             ->assertHeader('Vary', 'Accept');
